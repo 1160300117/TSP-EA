@@ -1,8 +1,6 @@
 import re
 import numpy as np
 
-fileaddr = "data/rl5915.tsp"
-
 class TSPlib:
     # NAME : <string> Identifies the data file
     NAME = ""
@@ -36,33 +34,22 @@ class TSPlib:
 
     def __init__(self, file_address):
         file_obejct = open(file_address)
-        # try:
-        #     for line in file_obejct:
-        #         print(line)
-        # finally:
-        #     file_obejct.close()
-        self.NAME = re.split(r'NAME : |\n', file_obejct.readline())[1]
-        self.COMMENT = re.split(r'COMMENT : |\n', file_obejct.readline())[1]
-        self.TYPE = re.split(r'TYPE : |\n', file_obejct.readline())[1]
-        self.DIMENSION = int(re.split(r'DIMENSION : |\n', file_obejct.readline())[1])
-        self.EDGE_WEIGHT_TYPE = re.split(r'EDGE_WEIGHT_TYPE : |\n', file_obejct.readline())[1]
+
+        self.NAME = re.split(r'NAME: |\n', file_obejct.readline())[1]
+        self.COMMENT = re.split(r'COMMENT: |\n', file_obejct.readline())[1]
+        self.TYPE = re.split(r'TYPE: |\n', file_obejct.readline())[1]
+        self.DIMENSION = int(re.split(r'DIMENSION: |\n', file_obejct.readline())[1])
+        self.EDGE_WEIGHT_TYPE = re.split(r'EDGE_WEIGHT_TYPE: |\n', file_obejct.readline())[1]
         file_obejct.readline()
-        # print(name, comment, _type, dimension, edge_weight_type)
 
         self.pos = np.zeros((self.DIMENSION, 3))
-        # print(pos)
-        # line = file_obejct.readline()
+
         for i in range(self.DIMENSION):
             a = list(filter(None, re.split(r' |\n', file_obejct.readline())))
-            self.pos[i][0] = float(a[0])
-            self.pos[i][1] = float(a[1])
-            self.pos[i][2] = float(a[2])
-            # print(a)
-        # print(self.pos)
+            self.pos[i][0] = int(a[0])
+            self.pos[i][1] = int(a[1])
+            self.pos[i][2] = int(a[2])
 
     def print_pos(self):
         print("test")
         print(self.pos)
-
-tsp = TSPlib(fileaddr)
-tsp.print_pos()
