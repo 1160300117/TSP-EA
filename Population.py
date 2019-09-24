@@ -17,6 +17,7 @@ class Individual:
         self.cnt = tsp.DIMENSION
         self.pos = tsp.pos
         self.tour = []
+        self.adaptbility = 0
 
         # 确定起点随机构造路径
         self.tour.append(src)
@@ -35,7 +36,7 @@ class Individual:
             x2 = next[1]
             y2 = next[2]
             self.length = self.length + math.sqrt( (x2-x1)*(x2-x1) + (y2-y1)*(y2-y1) )
-        self.adaptbility = 1 / self.length  # 个体的适应度，为路径长度的倒数，越大越好
+
 
     def print_tour(self):
         print("tour")
@@ -48,10 +49,28 @@ class Population:
     # cnt 为种群中个体的个数
     def __init__(self, cnt):
         self.pop = []
+        self.len = cnt
         for i in range(0, cnt):
             src = int(random.uniform(0, cnt + 1))
             ind = Individual(tsp, src)
             self.pop.append(ind)
+
+    # 将种群中所有ind的适应度进行归一化(映射为0到1的float)
+    def get_adaptability(self):
+        a = []
+        min = 1.0 / self.pop[0].length
+        max = min
+        for ind in self.pop:
+            tmp = 1.0 / ind.length
+            a.append(tmp)
+            if (tmp < min):
+                min = tmp
+            if (tmp > max):
+                max = tmp
+            ind.adaptability = tmp
+        for ind in self.pop:
+            ind.adaptability = (ind.adaptability - min) / (max - min)
+
 
     #***************************************************************************************
     # 交叉算法
@@ -101,8 +120,25 @@ class Population:
     # 选择算法
 
     # fitness_proportional 适应性比例选择,个体被选择的几率与适应度相关
-    def fitness_proportional_selection(self):
-        return 0
+    # n为选择出来的子集的规模
+    # inds为被选择的父集
+    # 类似水库抽样，先取inds中前n个ind。接下来的ind到达时，保留概率为其适应度。
+    # 若保留，则随机选择子集中的一个ind，其被替换的概率为(1-其适应度)，
+    # 若其不被替换则重新随机选择一个ind，直至新ind替换了原子集中的ind
+    def fitness_proportional_selection(self, n, inds):
+        child = []
+        for i in range(n):
+            child.append(inds[i])
+        for i in range(n, self.len):
+            if(random.uniform(0, 1) < inds[i].adaptability):
+                flag = 0
+                while(flag == 0):
+                    tmp_pos = int(random.uniform(0, n))
+                    if(random.uniform(0, 1) > child[tmp_pos].adaptability):
+                        child[tmp_pos] = inds[i]
+                        flag = 1
+
+        return child
 
     # tournament 比赛选择，k个个体竞争产生下一代，优胜劣出！
     #          随机挑选k个竞争者，在交配池中竞争每一位基因遗传，适应性最好的将获得该基因的遗传权。
@@ -110,8 +146,45 @@ class Population:
         return 0
 
     # elitism 精英主义选择，使当前一代中最好的生物体原封不动地传给下一代
-    def elitism_selection(self):
-        return 0
+    # elite_num 为精英数量
+    # n为选择出来的子集的总规模(包括精英)
+    # inds为被选择的父集
+    def elitism_selection(self, elite_num, n, inds):
+        elite = [] # 精英子集
+        normal = [] # 普通子集
+        selected_normal = [] # 从普通子集中选择出来的集
+
+        # 选择出精英子集，可以改为用最大堆实现
+        min_elite_adapt = inds[0].adaptability
+        for i in range(n):
+            # 先向elite中放入前elite_num个ind
+            if (i < elite_num):
+                elite.append(inds[i])
+                if(inds[i].adaptability < min_elite_adapt):
+                    # 记录elite中适应度的最小值
+                    min_elite_adapt = inds[i].adaptability
+            else:
+                # 如果新ind的adaptability大于min_elite_adapt
+                # 则用它替换elite中adaptability最小的那个ind
+                # 然后更新min_elite_adapt
+                if(inds[i].adaptability > min_elite_adapt):
+                    tmp_min = 1
+                    for j in range(elite_num):
+                        if (elite[j].adaptability > min_elite_adapt
+                                and elite[i].adaptability < tmp_min):
+                            tmp_min = elite[i].adaptability
+                        if(elite[j].adaptability == min_elite_adapt):
+                            normal.append(elite[j])
+                            elite[j] = inds[i]
+                    min_elite_adapt = tmp_min
+                else:
+                    normal.append(inds[i])
+
+        # 从normal集中选择
+        selected_normal = self.fitness_proportional_selection(n - elite_num, normal)
+        return elite.append(selected_normal)
+
+
 
 
 
