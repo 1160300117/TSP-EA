@@ -3,11 +3,11 @@ import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.lines import Line2D
 
-<<<<<<< HEAD
-=======
-fileaddr = "data/pcb442.tsp"
+# <<<<<<< HEAD
+# =======
+# fileaddr = "data/pcb442.tsp"
 
->>>>>>> bc19b640c66e090ebb245069b4e390466a8c5e5e
+# >>>>>>> bc19b640c66e090ebb245069b4e390466a8c5e5e
 class TSPlib:
     # NAME : <string> Identifies the data file
     NAME = ""
@@ -41,20 +41,20 @@ class TSPlib:
 
     def __init__(self, file_address):
         file_obejct = open(file_address)
-<<<<<<< HEAD
+# <<<<<<< HEAD
 
-        self.NAME = re.split(r'NAME: |\n', file_obejct.readline())[1]
-        self.COMMENT = re.split(r'COMMENT: |\n', file_obejct.readline())[1]
-        self.TYPE = re.split(r'TYPE: |\n', file_obejct.readline())[1]
-        self.DIMENSION = int(re.split(r'DIMENSION: |\n', file_obejct.readline())[1])
-        self.EDGE_WEIGHT_TYPE = re.split(r'EDGE_WEIGHT_TYPE: |\n', file_obejct.readline())[1]
-=======
+        # self.NAME = re.split(r'NAME: |\n', file_obejct.readline())[1]
+        # self.COMMENT = re.split(r'COMMENT: |\n', file_obejct.readline())[1]
+        # self.TYPE = re.split(r'TYPE: |\n', file_obejct.readline())[1]
+        # self.DIMENSION = int(re.split(r'DIMENSION: |\n', file_obejct.readline())[1])
+        # self.EDGE_WEIGHT_TYPE = re.split(r'EDGE_WEIGHT_TYPE: |\n', file_obejct.readline())[1]
+# =======
         self.NAME = re.split(r'NAME : |\n', file_obejct.readline())[1]
         self.COMMENT = re.split(r'COMMENT : |\n', file_obejct.readline())[1]
         self.TYPE = re.split(r'TYPE : |\n', file_obejct.readline())[1]
         self.DIMENSION = int(re.split(r'DIMENSION : |\n', file_obejct.readline())[1])
         self.EDGE_WEIGHT_TYPE = re.split(r'EDGE_WEIGHT_TYPE : |\n', file_obejct.readline())[1]
->>>>>>> bc19b640c66e090ebb245069b4e390466a8c5e5e
+# >>>>>>> bc19b640c66e090ebb245069b4e390466a8c5e5e
         file_obejct.readline()
 
         self.pos = np.zeros((self.DIMENSION, 3))
@@ -68,8 +68,8 @@ class TSPlib:
     def print_pos(self):
         print("test")
         print(self.pos)
-<<<<<<< HEAD
-=======
+# <<<<<<< HEAD
+# =======
 
     def plot(self, route):
         # route为点序列，表示依次连接的点
@@ -115,9 +115,9 @@ def get_simple_route(n):
         r[i] = i + 1
     return r
 
-tsp = TSPlib(fileaddr)
-tsp.get_opt_tour()
-tsp.print_pos()
-tsp.plot(get_simple_route(tsp.DIMENSION))
+# tsp = TSPlib(fileaddr)
+# tsp.get_opt_tour()
+# tsp.print_pos()
+# tsp.plot(get_simple_route(tsp.DIMENSION))
 # print(tsp.given_opt_tour)
->>>>>>> bc19b640c66e090ebb245069b4e390466a8c5e5e
+# >>>>>>> bc19b640c66e090ebb245069b4e390466a8c5e5e
