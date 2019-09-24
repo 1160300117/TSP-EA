@@ -3,11 +3,8 @@ import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.lines import Line2D
 
-# <<<<<<< HEAD
-# =======
-# fileaddr = "data/pcb442.tsp"
+fileaddr = "data/st70.tsp"
 
-# >>>>>>> bc19b640c66e090ebb245069b4e390466a8c5e5e
 class TSPlib:
     # NAME : <string> Identifies the data file
     NAME = ""
@@ -41,20 +38,13 @@ class TSPlib:
 
     def __init__(self, file_address):
         file_obejct = open(file_address)
-# <<<<<<< HEAD
 
-        # self.NAME = re.split(r'NAME: |\n', file_obejct.readline())[1]
-        # self.COMMENT = re.split(r'COMMENT: |\n', file_obejct.readline())[1]
-        # self.TYPE = re.split(r'TYPE: |\n', file_obejct.readline())[1]
-        # self.DIMENSION = int(re.split(r'DIMENSION: |\n', file_obejct.readline())[1])
-        # self.EDGE_WEIGHT_TYPE = re.split(r'EDGE_WEIGHT_TYPE: |\n', file_obejct.readline())[1]
-# =======
         self.NAME = re.split(r'NAME : |\n', file_obejct.readline())[1]
         self.COMMENT = re.split(r'COMMENT : |\n', file_obejct.readline())[1]
         self.TYPE = re.split(r'TYPE : |\n', file_obejct.readline())[1]
         self.DIMENSION = int(re.split(r'DIMENSION : |\n', file_obejct.readline())[1])
         self.EDGE_WEIGHT_TYPE = re.split(r'EDGE_WEIGHT_TYPE : |\n', file_obejct.readline())[1]
-# >>>>>>> bc19b640c66e090ebb245069b4e390466a8c5e5e
+
         file_obejct.readline()
 
         self.pos = np.zeros((self.DIMENSION, 3))
@@ -62,14 +52,12 @@ class TSPlib:
         for i in range(self.DIMENSION):
             a = list(filter(None, re.split(r' |\n', file_obejct.readline())))
             self.pos[i][0] = int(a[0])
-            self.pos[i][1] = int(a[1])
-            self.pos[i][2] = int(a[2])
+            self.pos[i][1] = float(a[1])
+            self.pos[i][2] = float(a[2])
 
     def print_pos(self):
         print("test")
         print(self.pos)
-# <<<<<<< HEAD
-# =======
 
     def plot(self, route):
         # route为点序列，表示依次连接的点
@@ -87,13 +75,10 @@ class TSPlib:
 
         for j in range(self.DIMENSION - 1):
             a = int(route[j + 1] - 1)
-            # print("\npos[a]", self.pos[a])
             target_dot = [self.pos[a][1], self.pos[a][2]]
-            # print("source:", source_dot, "\ntarget:", target_dot)
-            # plt.plot(source_dot, target_dot, c='g')
             ax.add_line(Line2D([source_dot[0], target_dot[0]], [source_dot[1], target_dot[1]], linewidth=1, color='blue'))
             source_dot = target_dot
-        # ax.add_line(Line2D([0, 0], [15, 30], linewidth=1, color='red'))
+
         plt.plot()
         plt.show()
 
@@ -120,4 +105,4 @@ def get_simple_route(n):
 # tsp.print_pos()
 # tsp.plot(get_simple_route(tsp.DIMENSION))
 # print(tsp.given_opt_tour)
-# >>>>>>> bc19b640c66e090ebb245069b4e390466a8c5e5e
+
