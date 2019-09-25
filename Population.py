@@ -12,7 +12,6 @@ class Individual:
     cnt = 0
     pos = []
 
-
     def __init__(self, tsp, src):
         self.cnt = tsp.DIMENSION
         self.pos = tsp.pos
@@ -36,7 +35,6 @@ class Individual:
             x2 = next[1]
             y2 = next[2]
             self.length = self.length + math.sqrt( (x2-x1)*(x2-x1) + (y2-y1)*(y2-y1) )
-
 
     def print_tour(self):
         print("tour")
@@ -76,25 +74,99 @@ class Population:
     # 交叉算法
     # http://www.rubicite.com/Tutorials/GeneticAlgorithms/CrossoverOperators/EdgeRecombinationCrossoverOperator.aspx
 
-    # order crossover
+    # order crossover 顺序交叉
     def order_crossover(self, parent1, parent2):
-        child = parent1 # 这句要重写
-        return child
+        child1 = parent1
+        child2 = parent2
+        cnt = len(parent1)
 
-    # PMX crossover
-    def PMX_crossover(self, parent1, parent2):
-        child = parent1  # 这句要重写
-        return child
+        # 随机在parent1中选择一段
+        start = int(random.uniform(0, cnt / 2))
+        gene1 = parent1[start:start + cnt / 2]
+        gene2 = []
+        for city in parent2:
+            if city not in gene1:
+                gene2.append(city)
+        # parent1中基因直接落下，余下位置插入parent2中的city
+        child1[0:start] = gene2[0:start]
+        child1[start + cnt / 2:cnt] = gene2[start:len(gene2)]
+        
+        # 随机在parent2中选择一段
+        start = int(random.uniform(0, cnt / 2))
+        gene2 = parent2[start:start + cnt / 2]
+        gene1 = []
+        for city in parent1:
+            if city not in gene2:
+                gene1.append(city)
+        # parent2中基因直接落下，余下位置插入parent1中的city
+        child2[0:start] = gene1[0:start]
+        child2[start + cnt / 2:cnt] = gene1[start:len(gene1)]
+        
+        return child1, child2
 
-    # cycle crossover
+    # cycle crossover 循环交叉
     def cycle_crossover(self, parent1, parent2):
-        child = parent1  # 这句要重写
-        return child
+        child1 = parent1
+        child2 = parent2
+        cnt = len(parent1)
 
-    # edge recombination 边缘重组交叉
-    def edge_recombination_crossover(self, parent1, parent2):
-        child = parent1  # 这句要重写
-        return child
+        # 初始化标记为0, 奇数循环标1, 偶数循环标2
+        mark = []
+        for i in range(0, cnt):
+            mark.append(0) 
+
+        # 开始循环标记
+        start = 0 # 每次循环的起点
+        cycle = True # 控制奇偶循环 
+        flag = True # 控制上下标记
+        while True：
+            if cycle == True:
+                # 奇数循环
+                while True:
+                    if mark[start] == 0:
+                        mark[start] = 1
+                    else:
+                        break
+                    # 来回找下标
+                    if flag == True:
+                        next = find_index(parent2, parent1[start])
+                    else:
+                        next = find_index(parent1, parent2[start])
+                    falg = !flag
+                    start = next
+            else:
+                # 偶数循环
+                while True:
+                    if mark[start] == 0:
+                        mark[start] = 2
+                    else:
+                        break
+                    # 来回找下标
+                    if flag == True:
+                        next = find_index(parent2, parent1[start])
+                    else:
+                        next = find_index(parent1, parent2[start])
+                    falg = !flag
+                    start = next
+            cycle = !cycle
+            for i in range(0, cnt):
+                if mark[i] == 0:
+                    start = i
+
+        # 生成child1和child2    
+        for m in mark:
+            if m == 2:
+                child1[m] = parent2[m]
+                child2[m] = parent1[m]
+        return child1, child2
+
+    # 根据值找到对应下标
+    def find_index(parent, city):
+        for i in range(0, len(parent)):
+            if city = parent[i]:
+                return i
+
+
 
     # ***************************************************************************************
     # 突变算法
