@@ -119,14 +119,11 @@ class Population:
         start = 0 # 每次循环的起点
         cycle = True # 控制奇偶循环 
         flag = True # 控制上下标记
-        while True：
+        while 0 in mark：
             if cycle == True:
                 # 奇数循环
-                while True:
-                    if mark[start] == 0:
-                        mark[start] = 1
-                    else:
-                        break
+                while mark[start] == 0:
+                    mark[start] = 1
                     # 来回找下标
                     if flag == True:
                         next = find_index(parent2, parent1[start])
@@ -136,17 +133,14 @@ class Population:
                     start = next
             else:
                 # 偶数循环
-                while True:
-                    if mark[start] == 0:
-                        mark[start] = 2
-                    else:
-                        break
+                while mark[start] == 0:
+                    mark[start] = 2
                     # 来回找下标
                     if flag == True:
                         next = find_index(parent2, parent1[start])
                     else:
                         next = find_index(parent1, parent2[start])
-                    falg = !flag
+                    flag = !flag
                     start = next
             cycle = !cycle
             for i in range(0, cnt):
@@ -260,8 +254,9 @@ class Population:
 
 
 
-p = Population(3)
-for ind in p.pop:
-    ind.getLength()
-    ind.print_tour()
-    tsp.plot(ind.tour)
+p = Population(2)
+# for ind in p.pop:
+#     ind.getLength()
+#     ind.print_tour()
+#     tsp.plot(ind.tour)
+print(p.order_crossover(p.pop[1], p.pop[2]))
