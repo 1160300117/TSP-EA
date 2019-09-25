@@ -119,6 +119,7 @@ class Population:
         start = 0 # 每次循环的起点
         cycle = True # 控制奇偶循环 
         flag = True # 控制上下标记
+
         while 0 in mark：
             if cycle == True:
                 # 奇数循环
@@ -129,7 +130,7 @@ class Population:
                         next = find_index(parent2, parent1[start])
                     else:
                         next = find_index(parent1, parent2[start])
-                    falg = !flag
+                    flag = not flag
                     start = next
             else:
                 # 偶数循环
@@ -140,9 +141,9 @@ class Population:
                         next = find_index(parent2, parent1[start])
                     else:
                         next = find_index(parent1, parent2[start])
-                    flag = !flag
+                    flag = not flag
                     start = next
-            cycle = !cycle
+            cycle = not cycle
             for i in range(0, cnt):
                 if mark[i] == 0:
                     start = i
