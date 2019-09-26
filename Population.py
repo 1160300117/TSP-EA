@@ -80,6 +80,7 @@ class Population:
     # http://www.rubicite.com/Tutorials/GeneticAlgorithms/CrossoverOperators/EdgeRecombinationCrossoverOperator.aspx
 
     # order crossover 顺序交叉
+    # 每次交叉选择一个基准parent，然后把另一个parent的不重复基因往child中填充
     def order_crossover(self, parent1, parent2):
         child1 = parent1
         child2 = parent2
@@ -111,6 +112,8 @@ class Population:
         return child1, child2
 
     # cycle crossover 循环交叉
+    # 从parent1中循环复制一部分，再从parent2中循环复制一部分，以此类推
+    # 奇数次循环标记的部分，parent1落到child1，parent2落到child2，反之同理
     def cycle_crossover(self, parent1, parent2):
         child1 = parent1
         child2 = parent2
