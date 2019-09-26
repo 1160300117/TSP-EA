@@ -42,6 +42,11 @@ class Individual:
         print("length")
         print(self.length)
 
+# 根据值找到对应下标
+def find_index(parent, city):
+    for i in range(0, len(parent)):
+        if city == parent[i]:
+            return i
 
 class Population:
     # cnt 为种群中个体的个数
@@ -82,25 +87,26 @@ class Population:
 
         # 随机在parent1中选择一段
         start = int(random.uniform(0, cnt / 2))
-        gene1 = parent1[start:start + cnt / 2]
+        end = start + int(cnt / 2)
+        gene1 = parent1[start:end]
         gene2 = []
         for city in parent2:
             if city not in gene1:
                 gene2.append(city)
         # parent1中基因直接落下，余下位置插入parent2中的city
         child1[0:start] = gene2[0:start]
-        child1[start + cnt / 2:cnt] = gene2[start:len(gene2)]
+        child1[end:cnt] = gene2[start:len(gene2)]
         
         # 随机在parent2中选择一段
         start = int(random.uniform(0, cnt / 2))
-        gene2 = parent2[start:start + cnt / 2]
+        gene2 = parent2[start:end]
         gene1 = []
         for city in parent1:
             if city not in gene2:
                 gene1.append(city)
         # parent2中基因直接落下，余下位置插入parent1中的city
         child2[0:start] = gene1[0:start]
-        child2[start + cnt / 2:cnt] = gene1[start:len(gene1)]
+        child2[end:cnt] = gene1[start:len(gene1)]
         
         return child1, child2
 
@@ -120,7 +126,7 @@ class Population:
         cycle = True # 控制奇偶循环 
         flag = True # 控制上下标记
 
-        while 0 in mark：
+        while 0 in mark:
             if cycle == True:
                 # 奇数循环
                 while mark[start] == 0:
@@ -154,12 +160,6 @@ class Population:
                 child1[m] = parent2[m]
                 child2[m] = parent1[m]
         return child1, child2
-
-    # 根据值找到对应下标
-    def find_index(parent, city):
-        for i in range(0, len(parent)):
-            if city = parent[i]:
-                return i
 
 
 
@@ -260,4 +260,4 @@ p = Population(2)
 #     ind.getLength()
 #     ind.print_tour()
 #     tsp.plot(ind.tour)
-print(p.order_crossover(p.pop[1], p.pop[2]))
+print(p.cycle_crossover(p.pop[0].tour, p.pop[1].tour))
