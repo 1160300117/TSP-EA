@@ -4,8 +4,8 @@ import numpy as np
 import math
 import TSP
 
-# fileaddr = "data/st70.tsp"
-# tsp = TSP.TSPlib(fileaddr)
+fileaddr = "data/st70.tsp"
+tsp = TSP.TSPlib(fileaddr)
 # population_size = [10, 20, 50, 100]
 
 class Individual:
@@ -13,12 +13,13 @@ class Individual:
     cnt = 0
     pos = []
 
-    def __init__(self, tsp, src):
+    def __init__(self, tsp):
         self.cnt = tsp.DIMENSION
         self.pos = tsp.pos
         self.tour = []
         self.adaptbility = 0
 
+    def setTour(self, src):
         # 确定起点随机构造路径
         self.tour.append(src)
         while len(self.tour) != self.cnt:
@@ -26,7 +27,6 @@ class Individual:
             if next not in self.tour and next != src:
                 self.tour.append(next)
         self.tour.append(src)
-
 
     def getLength(self):
         for i in range(0, self.cnt - 1):
@@ -57,7 +57,8 @@ class Population:
         self.len = cnt
         for i in range(0, cnt):
             src = int(random.uniform(0, cnt + 1))
-            ind = Individual(tsp, src)
+            ind = Individual(tsp)
+            ind.setTour(src)
             self.pop.append(ind)
 
     # 将种群中所有ind的适应度进行归一化(映射为0到1的float)
@@ -175,7 +176,6 @@ class Population:
 
     # insert 插入突变。【或许TSP不适合插入突变】
     def insert_mutation(self, ind):
-
         cnt = ind.cnt
         # 随机选择ind中的两个基因
         gene1 = random.randint(0, cnt-1)
@@ -185,10 +185,10 @@ class Population:
         # 将后一基因插入到前一基因之后
         if gene1 < gene2:
             ind.tour.insert(gene1+1, ind.tour[gene2])
-            ind.tour.pop(gene2+1)
+            del ind.tour[gene2+1]
         else:
             ind.tour.insert(gene2+1, ind.tour[gene1])
-            ind.tour.pop(gene1+1)
+            del ind.tour[gene1+1]
         return ind
 
     # swap 交换突变，随机选择染色体上的两个位置，并交换值。
@@ -369,21 +369,21 @@ def algo1(population, path):
 
 
 
-# algorithm2 cycle_crossover + swap_mutation + elitism_selection
-def algo2(population, path):
-    tsp = TSP.TSPlib(path)
-    p = Population(population, tsp)
+# # algorithm2 cycle_crossover + swap_mutation + elitism_selection
+# def algo2(population, path):
+#     tsp = TSP.TSPlib(path)
+#     p = Population(population, tsp)
 
-# algorithm3 order_crossover + all kinds of mutations + elitism_selection
-def algo3(population, path):
-    tsp = TSP.TSPlib(path)
-    p = Population(population)
+# # algorithm3 order_crossover + all kinds of mutations + elitism_selection
+# def algo3(population, path):
+#     tsp = TSP.TSPlib(path)
+#     p = Population(population)
 
-# p = Population(2)
+p = Population(2, tsp)
 # for ind in p.pop:
 #     ind.getLength()
 #     ind.print_tour()
 #     tsp.plot(ind.tour)
-# print(p.cycle_crossover(p.pop[0].tour, p.pop[1].tour))
+print(p.insert_mutation(p.pop[0]).tour)
 
-algo1(20, "data/st70.tsp")
+# algo1(20, "data/st70.tsp")
