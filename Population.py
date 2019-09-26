@@ -169,19 +169,57 @@ class Population:
 
     # insert 插入突变。【或许TSP不适合插入突变】
     def insert_mutation(self, ind):
-        return 0
+        cnt = len(ind)
+        # 随机选择ind中的两个基因
+        gene1 = random.randint(0,cnt-1)
+        gene2 = random.randint(0,cnt-1)
+        while gene1 == gene2:
+            gene2 = random.randint(0, cnt-1) #防止选中的两个基因为同一个
+        # 将后一基因插入到前一基因之后
+        if gene1 < gene2:
+            ind.insert(gene1+1, ind[gene2])
+            ind.pop(gene2+1)
+        else:
+            ind.insert(gene2+1, ind[gene1])
+            ind.pop(h=gene1+1)
+        return ind
 
     # swap 交换突变，随机选择染色体上的两个位置，并交换值。
     def swap_mutation(self, ind):
-        return 0
+        cnt = len(ind)
+        # 随机选择ind中的两个基因
+        gene1 = random.randint(0, cnt - 1)
+        gene2 = random.randint(0, cnt - 1)
+        while gene1 == gene2:
+            gene2 = random.randint(0, cnt - 1)  # 防止选中的两个基因为同一个
+        # 进行交换
+        tmp = ind[gene1]
+        ind[gene1] = ind[gene2]
+        ind[gene2] = tmp
+        return ind
 
     # inversion 反转突变，选择基因的一个子集，并将其反转。
     def inversion_mutation(self, ind):
-        return 0
+        # 随机在int中选择一段
+        cnt = len(ind)
+        gstart = random.randint(0, cnt - 2)
+        gend = random.randint(gstart + 1, cnt - 1)
+        gene = ind[gstart: gend]
+        gene = gene[::-1]  # 反转选中的基因
+        ind[gstart: gend] = gene[0: len(gene)]  # 将反转后的基因放回
+        return ind
 
     # scramble 加扰突变，从整个染色体中选择基因的一个子集，然后随机扰乱或乱序排列它们的值。
     def scramble_mutation(self, ind):
-        return 0
+        # 随机在int中选择一段
+        cnt = len(ind)
+        gstart = random.randint(0, cnt - 2)
+        gend = random.randint(gstart + 1, cnt - 1)
+        gene = ind[gstart: gend]
+        gcnt = len(gene)
+        random.shuffle(gene)  # 随机打乱选中的基因
+        ind[gstart: gend] = gene[0: len(gene)]  # 将打乱后的基因放回
+        return ind
 
     #***************************************************************************************
     # 选择算法
