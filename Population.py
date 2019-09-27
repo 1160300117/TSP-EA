@@ -4,8 +4,8 @@ import numpy as np
 import math
 import TSP
 
-fileaddr = "data/st70.tsp"
-tsp = TSP.TSPlib(fileaddr)
+# fileaddr = "data/st70.tsp"
+# tsp = TSP.TSPlib(fileaddr)
 # population_size = [10, 20, 50, 100]
 
 class Individual:
@@ -17,16 +17,17 @@ class Individual:
         self.cnt = tsp.DIMENSION
         self.pos = tsp.pos
         self.tour = []
-        self.adaptbility = 0
+        self.adaptability = 0
 
     def setTour(self, src):
         # 确定起点随机构造路径
         self.tour.append(src)
         while len(self.tour) != self.cnt:
-            next = int(random.uniform(0, self.cnt + 1))
+            next = random.randint(1, self.cnt)
             if next not in self.tour and next != src:
                 self.tour.append(next)
-        self.tour.append(src)
+
+
 
     def getLength(self):
         for i in range(0, self.cnt - 1):
@@ -51,12 +52,13 @@ def find_index(parent, city):
             return i
 
 class Population:
-    # cnt 为种群中个体的个数
-    def __init__(self, cnt, tsp):
+    # popu_size 为种群中个体的个数
+    def __init__(self, popu_size, tsp):
         self.pop = []
-        self.len = cnt
-        for i in range(0, cnt):
-            src = int(random.uniform(0, cnt + 1))
+        self.len = popu_size
+        t = len(tsp.pos)
+        for i in range(0, popu_size):
+            src = random.randint(0, t)
             ind = Individual(tsp)
             ind.setTour(src)
             self.pop.append(ind)
@@ -75,8 +77,12 @@ class Population:
                 max = tmp
             ind.adaptability = tmp
         for ind in ind_list:
-            ind.adaptability = (ind.adaptability - min) / (max - min)
-            print(ind.adaptbility)
+            if(max != min):
+                ind.adaptability = 1 - ind.length / max
+            else:
+                ind.adaptability = 0
+            print("adaptability:", ind.adaptability)
+        print("")
 
 
     #***************************************************************************************
@@ -84,11 +90,10 @@ class Population:
     # http://www.rubicite.com/Tutorials/GeneticAlgorithms/CrossoverOperators/EdgeRecombinationCrossoverOperator.aspx
 
     # order crossover 顺序交叉
-    # 每次交叉选择一个基准parent，然后把另一个parent的不重复基因往child中填充
     def order_crossover(self, parent1, parent2):
         child1 = parent1
         child2 = parent2
-        cnt = len(parent1.tour)
+        cnt = parent1.cnt
 
         # 随机在parent1中选择一段
         start = int(random.uniform(0, cnt / 2))
@@ -99,29 +104,34 @@ class Population:
             if city not in gene1:
                 gene2.append(city)
         # parent1中基因直接落下，余下位置插入parent2中的city
-        child1.tour[0:start] = gene2[0:start]
-        child1.tour[end:cnt] = gene2[start:len(gene2)]
+        # child1.tour[0:start] = gene2[0:start]
+        # child1.tour[end:cnt] = gene2[start:len(gene2)]
+        child1.tour[0: int(cnt / 2)] = gene1
+        child1.tour[int(cnt / 2):] = gene2
         
         # 随机在parent2中选择一段
         start = int(random.uniform(0, cnt / 2))
+        end = start + int(cnt / 2)
+        gene1.clear()
+        gene2.clear()
         gene2 = parent2.tour[start:end]
         gene1 = []
         for city in parent1.tour:
             if city not in gene2:
                 gene1.append(city)
         # parent2中基因直接落下，余下位置插入parent1中的city
-        child2.tour[0:start] = gene1[0:start]
-        child2.tour[end:cnt] = gene1[start:len(gene1)]
+        # child2.tour[0:start] = gene1[0:start]
+        # child2.tour[end:cnt] = gene1[start:len(gene1)]
+        child2.tour[0: int(cnt / 2)] = gene1
+        child2.tour[int(cnt / 2):] = gene2
         
         return child1, child2
 
     # cycle crossover 循环交叉
-    # 从parent1中循环复制一部分，再从parent2中循环复制一部分，以此类推
-    # 奇数次循环标记的部分，parent1落到child1，parent2落到child2，反之同理
     def cycle_crossover(self, parent1, parent2):
         child1 = parent1
         child2 = parent2
-        cnt = len(parent1)
+        cnt = len(parent1.tour)
 
         # 初始化标记为0, 奇数循环标1, 偶数循环标2
         mark = []
@@ -140,9 +150,9 @@ class Population:
                     mark[start] = 1
                     # 来回找下标
                     if flag == True:
-                        next = find_index(parent2, parent1[start])
+                        next = find_index(parent2.tour, parent1.tour[start])
                     else:
-                        next = find_index(parent1, parent2[start])
+                        next = find_index(parent1.tour, parent2.tour[start])
                     flag = not flag
                     start = next
             else:
@@ -151,9 +161,9 @@ class Population:
                     mark[start] = 2
                     # 来回找下标
                     if flag == True:
-                        next = find_index(parent2, parent1[start])
+                        next = find_index(parent2.tour, parent1.tour[start])
                     else:
-                        next = find_index(parent1, parent2[start])
+                        next = find_index(parent1.tour, parent2.tour[start])
                     flag = not flag
                     start = next
             cycle = not cycle
@@ -164,8 +174,8 @@ class Population:
         # 生成child1和child2    
         for m in mark:
             if m == 2:
-                child1[m] = parent2[m]
-                child2[m] = parent1[m]
+                child1.tour[m] = parent2.tour[m]
+                child2.tour[m] = parent1.tour[m]
         return child1, child2
 
 
@@ -176,6 +186,7 @@ class Population:
 
     # insert 插入突变。【或许TSP不适合插入突变】
     def insert_mutation(self, ind):
+
         cnt = ind.cnt
         # 随机选择ind中的两个基因
         gene1 = random.randint(0, cnt-1)
@@ -185,24 +196,24 @@ class Population:
         # 将后一基因插入到前一基因之后
         if gene1 < gene2:
             ind.tour.insert(gene1+1, ind.tour[gene2])
-            del ind.tour[gene2+1]
+            ind.tour.pop(gene2+1)
         else:
             ind.tour.insert(gene2+1, ind.tour[gene1])
-            del ind.tour[gene1+1]
+            ind.tour.pop(gene1+1)
         return ind
 
     # swap 交换突变，随机选择染色体上的两个位置，并交换值。
     def swap_mutation(self, ind):
-        cnt = len(ind)
+        cnt = ind.cnt
         # 随机选择ind中的两个基因
         gene1 = random.randint(0, cnt - 1)
         gene2 = random.randint(0, cnt - 1)
         while gene1 == gene2:
             gene2 = random.randint(0, cnt - 1)  # 防止选中的两个基因为同一个
         # 进行交换
-        tmp = ind[gene1]
-        ind[gene1] = ind[gene2]
-        ind[gene2] = tmp
+        tmp = ind.tour[gene1]
+        ind.tour[gene1] = ind.tour[gene2]
+        ind.tour[gene2] = tmp
         return ind
 
     # inversion 反转突变，选择基因的一个子集，并将其反转。
@@ -241,7 +252,8 @@ class Population:
         child = []
         for i in range(n):
             child.append(inds[i])
-        for i in range(n, self.len):
+        for i in range(n, len(inds)):
+            randddd = random.uniform(0, 1)
             if(random.uniform(0, 1) < inds[i].adaptability):
                 flag = 0
                 while(flag == 0):
@@ -251,6 +263,21 @@ class Population:
                         flag = 1
 
         return child
+
+    # top k select
+    def top_select(self, n, inds):
+        children = []
+        for i in range(n):
+            min_dis = inds[0].length
+            min_pos = 0
+
+            for j in range(len(inds)):
+                if inds[j].length < min_dis:
+                    min_dis = inds[j].length
+                    min_pos = j
+            children.append(inds[min_pos])
+            inds.pop(min_pos)
+        return children
 
     # tournament 比赛选择，k个个体竞争产生下一代，优胜劣出！
     #          随机挑选k个竞争者，在交配池中竞争每一位基因遗传，适应性最好的将获得该基因的遗传权。
@@ -311,8 +338,9 @@ def algo1(population, path):
     parent_list = p.pop
 
     # 20000代
-    for generation in range(100):
-
+    gene_cnt = 1
+    for generation in range(10):
+        print("generation:", gene_cnt)
         # 对每个parent更新距离
         for parent in parent_list:
             parent.getLength()
@@ -321,10 +349,11 @@ def algo1(population, path):
         child_list.clear()
 
         child1 = parent_list[0]
-        child2 = parent_list[0]
+        child2 = parent_list[1]
 
         # crossover
         for i in range(p.len):
+
             # 随机选择两个parent进行交叉，产生子代
             parent1 = parent_list[random.randint(0, p.len-1)]
             parent2 = parent_list[random.randint(0, p.len-1)]
@@ -333,30 +362,34 @@ def algo1(population, path):
             child_list.append(child1)
             child_list.append(child2)
 
-        # mutationa
+        # mutation
         cnti = 0
+        cnt2 = 0
         for child in child_list:
             cnti += 1
             if(random.random() < mutation_possiblity):
-                child.tour = p.insert_mutation(child)
+                child = p.swap_mutation(child)
+                cnt2 += 1
 
         # 更新距离
         for child in child_list:
             child.getLength()
 
-        # get adaptability
-        p.get_adaptability(child_list)
+        # # get adaptability
+        # p.get_adaptability(child_list)
 
+        print("11111")
         # selection
-        parent_list = p.fitness_proportional_selection(p.len, child_list)
+        parent_list = p.top_select(p.len, child_list)
+        gene_cnt += 1
 
     # 选出距离最短的
-    min_dis = parent_list[0].getLength() # 记录最短距离
+    min_dis = parent_list[0].length # 记录最短距离
     min_pos = 0 # 记录最短的ind的下标
     cnt = 0 # 计数器
     for parent in parent_list:
-        if(parent.getLength() < min_dis):
-            min_dis = parent.getLength()
+        if(parent.length < min_dis):
+            min_dis = parent.length
             min_pos = cnt
         cnt += 1
 
@@ -369,21 +402,21 @@ def algo1(population, path):
 
 
 
-# # algorithm2 cycle_crossover + swap_mutation + elitism_selection
-# def algo2(population, path):
-#     tsp = TSP.TSPlib(path)
-#     p = Population(population, tsp)
+# algorithm2 cycle_crossover + swap_mutation + elitism_selection
+def algo2(population, path):
+    tsp = TSP.TSPlib(path)
+    p = Population(population, tsp)
 
-# # algorithm3 order_crossover + all kinds of mutations + elitism_selection
-# def algo3(population, path):
-#     tsp = TSP.TSPlib(path)
-#     p = Population(population)
+# algorithm3 order_crossover + all kinds of mutations + elitism_selection
+def algo3(population, path):
+    tsp = TSP.TSPlib(path)
+    p = Population(population)
 
-p = Population(2, tsp)
+# p = Population(2)
 # for ind in p.pop:
 #     ind.getLength()
 #     ind.print_tour()
 #     tsp.plot(ind.tour)
-print(p.insert_mutation(p.pop[0]).tour)
+# print(p.cycle_crossover(p.pop[0].tour, p.pop[1].tour))
 
-# algo1(20, "data/st70.tsp")
+algo1(10, "data/st70.tsp")
