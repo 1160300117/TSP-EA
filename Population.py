@@ -267,17 +267,20 @@ class Population:
 
     # top k select
     def top_select(self, n, inds):
+        tmp = []
+        for ind in inds:
+            tmp.append(ind)
         children = []
         for i in range(n):
-            min_dis = inds[0].length
+            min_dis = tmp[0].length
             min_pos = 0
 
-            for j in range(len(inds)):
-                if inds[j].length < min_dis:
-                    min_dis = inds[j].length
+            for j in range(len(tmp)):
+                if tmp[j].length < min_dis:
+                    min_dis = tmp[j].length
                     min_pos = j
-            children.append(inds[min_pos])
-            inds.pop(min_pos)
+            children.append(tmp[min_pos])
+            tmp.pop(min_pos)
         return children
 
     # tournament 比赛选择，k个个体竞争产生下一代，优胜劣出！
@@ -289,45 +292,55 @@ class Population:
     # elite_num 为精英数量
     # n为选择出来的子集的总规模(包括精英)
     # inds为被选择的父集
-    def elitism_selection(self, elite_num, n, inds):
-        elite = [] # 精英子集
-        normal = [] # 普通子集
-        selected_normal = [] # 从普通子集中选择出来的集
+    def elitism_selection(self, elite_num, n, children_list, parent_list):
 
-        # 选择出精英子集，可以改为用最大堆实现
-        min_elite_adapt = inds[0].adaptability
-        for i in range(n):
-            # 先向elite中放入前elite_num个ind
-            if (i < elite_num):
-                elite.append(inds[i])
-                if(inds[i].adaptability < min_elite_adapt):
-                    # 记录elite中适应度的最小值
-                    min_elite_adapt = inds[i].adaptability
-            else:
-                # 如果新ind的adaptability大于min_elite_adapt
-                # 则用它替换elite中adaptability最小的那个ind
-                # 然后更新min_elite_adapt
-                if(inds[i].adaptability > min_elite_adapt):
-                    tmp_min = 1
-                    for j in range(elite_num):
-                        if (elite[j].adaptability > min_elite_adapt
-                                and elite[i].adaptability < tmp_min):
-                            tmp_min = elite[i].adaptability
-                        if(elite[j].adaptability == min_elite_adapt):
-                            normal.append(elite[j])
-                            elite[j] = inds[i]
-                    min_elite_adapt = tmp_min
-                else:
-                    normal.append(inds[i])
+        # elite = [] # 精英子集
+        # normal = [] # 普通子集
+        # selected_normal = [] # 从普通子集中选择出来的集
+        #
+        # # 选择出精英子集，可以改为用最大堆实现
+        # min_elite_adapt = inds[0].adaptability
+        # for i in range(n):
+        #     # 先向elite中放入前elite_num个ind
+        #     if (i < elite_num):
+        #         elite.append(inds[i])
+        #         if(inds[i].adaptability < min_elite_adapt):
+        #             # 记录elite中适应度的最小值
+        #             min_elite_adapt = inds[i].adaptability
+        #     else:
+        #         # 如果新ind的adaptability大于min_elite_adapt
+        #         # 则用它替换elite中adaptability最小的那个ind
+        #         # 然后更新min_elite_adapt
+        #         if(inds[i].adaptability > min_elite_adapt):
+        #             tmp_min = 1
+        #             for j in range(elite_num):
+        #                 if (elite[j].adaptability > min_elite_adapt
+        #                         and elite[i].adaptability < tmp_min):
+        #                     tmp_min = elite[i].adaptability
+        #                 if(elite[j].adaptability == min_elite_adapt):
+        #                     normal.append(elite[j])
+        #                     elite[j] = inds[i]
+        #             min_elite_adapt = tmp_min
+        #         else:
+        #             normal.append(inds[i])
+        #
+        # # 从normal集中选择
+        # selected_normal = self.fitness_proportional_selection(n - elite_num, normal)
+        # return elite.append(selected_normal)
+        res = []
+        elite = self.top_select(elite_num, parent_list)
+        normal = self.top_select(n - elite_num, children_list)
+        for ind in elite:
+            res.append(ind)
+        for ind in normal:
+            res.append(ind)
+        return res
 
-        # 从normal集中选择
-        selected_normal = self.fitness_proportional_selection(n - elite_num, normal)
-        return elite.append(selected_normal)
 
 # algorithm1 order_crossover + insert_mutation + fitness_proportional_selection
 def algo1(population, path):
     # 设置变异几率
-    mutation_possiblity = 0.2
+    mutation_possiblity = 0.6
 
     # 导入数据，存入tsp类
     tsp = TSP.TSPlib(path)
@@ -340,7 +353,7 @@ def algo1(population, path):
 
     # 20000代
     gene_cnt = 1
-    for generation in range(10000):
+    for generation in range(1000):
         print("generation:", gene_cnt)
         # 对每个parent更新距离
         for parent in parent_list:
@@ -379,7 +392,7 @@ def algo1(population, path):
         # # get adaptability
         # p.get_adaptability(child_list)
 
-        print("11111")
+        # print("11111")
         # selection
         parent_list = p.top_select(p.len, child_list)
         gene_cnt += 1
@@ -405,8 +418,75 @@ def algo1(population, path):
 
 # algorithm2 cycle_crossover + swap_mutation + elitism_selection
 def algo2(population, path):
+    # 设置变异几率
+    mutation_possiblity = 0.6
+
+    # 导入数据，存入tsp类
     tsp = TSP.TSPlib(path)
+
+    # 建立并初始化Population对象
     p = Population(population, tsp)
+
+    # di一代的父母列表
+    parent_list = p.pop
+
+    # 20000代
+    gene_cnt = 1
+    for generation in range(100):
+        print("generation:", gene_cnt)
+        # 对每个parent更新距离
+        for parent in parent_list:
+            parent.getLength()
+
+        child_list = []
+        child_list.clear()
+
+        child1 = parent_list[0]
+        child2 = parent_list[1]
+
+        # crossover
+        for i in range(p.len):
+            # 随机选择两个parent进行交叉，产生子代
+            parent1 = parent_list[random.randint(0, p.len - 1)]
+            parent2 = parent_list[random.randint(0, p.len - 1)]
+
+            child1, child2 = p.order_crossover(parent1, parent2)
+            child_list.append(child1)
+            child_list.append(child2)
+
+        # mutation
+        cnti = 0
+        cnt2 = 0
+        for child in child_list:
+            cnti += 1
+            if (random.random() < mutation_possiblity):
+                child = p.swap_mutation(child)
+                cnt2 += 1
+
+        # 更新距离
+        for child in child_list:
+            child.getLength()
+
+        # # get adaptability
+        # p.get_adaptability(child_list)
+
+        # print("11111")
+        # selection
+        parent_list = p.elitism_selection(10, population, child_list, parent_list)
+        gene_cnt += 1
+
+    # 选出距离最短的
+    min_dis = parent_list[0].length  # 记录最短距离
+    min_pos = 0  # 记录最短的ind的下标
+    cnt = 0  # 计数器
+    for parent in parent_list:
+        if (parent.length < min_dis):
+            min_dis = parent.length
+            min_pos = cnt
+        cnt += 1
+
+    print("the shortest path is ", min_dis)
+    tsp.plot(parent_list[min_pos].tour)
 
 # algorithm3 order_crossover + all kinds of mutations + elitism_selection
 def algo3(population, path):
@@ -420,4 +500,4 @@ def algo3(population, path):
 #     tsp.plot(ind.tour)
 # print(p.cycle_crossover(p.pop[0].tour, p.pop[1].tour))
 
-algo1(110, "data/st70.tsp")
+algo2(100, "data/st70.tsp")
