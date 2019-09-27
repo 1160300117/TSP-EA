@@ -30,6 +30,7 @@ class Individual:
 
 
     def getLength(self):
+        self.length = 0
         for i in range(0, self.cnt - 1):
             curr = self.pos[self.tour[i] - 1]
             next = self.pos[self.tour[i + 1] - 1]
@@ -339,7 +340,7 @@ def algo1(population, path):
 
     # 20000代
     gene_cnt = 1
-    for generation in range(10):
+    for generation in range(10000):
         print("generation:", gene_cnt)
         # 对每个parent更新距离
         for parent in parent_list:
@@ -419,4 +420,4 @@ def algo3(population, path):
 #     tsp.plot(ind.tour)
 # print(p.cycle_crossover(p.pop[0].tour, p.pop[1].tour))
 
-algo1(10, "data/st70.tsp")
+algo1(110, "data/st70.tsp")
